@@ -30,6 +30,10 @@ dist-ssr
 *.local
 
 # Editor directories and files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 .vscode/*
 !.vscode/extensions.json
 .idea

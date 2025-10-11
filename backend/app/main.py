@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from app.llm_service import get_health_recommendation
 
 app = FastAPI(title="Healthcare Symptom Checker")
 
@@ -19,5 +20,5 @@ class SymptomInput(BaseModel):
 
 @app.post("/api/check")
 def check_symptoms(data: SymptomInput):
-    print("data:", data)
-    return {"input": data.symptoms, "result": f"checking symptoms for {data.symptoms}"}
+    result = get_health_recommendation(data.symptoms)
+    return {"input": data.symptoms, "result": result}
