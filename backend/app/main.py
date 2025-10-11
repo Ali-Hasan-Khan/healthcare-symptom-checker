@@ -20,3 +20,4 @@ class SymptomInput(BaseModel):
 @app.post("/api/check")
 def check_symptoms(data: SymptomInput):
     print("data:", data)
+    return {"input": data.symptoms, "result": f"checking symptoms for {data.symptoms}"}

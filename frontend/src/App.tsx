@@ -1,35 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { checkSymptoms } from "./services/api";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [symptoms, setSymptoms] = useState("");
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleCheck = async () => {
+    if (!symptoms.trim()) return;
+    setLoading(true);
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
+    const response = await checkSymptoms(symptoms);
+    setResult(response);
+    setLoading(false);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+      <div className="bg-card border border-border shadow-lg rounded-lg p-8 w-full max-w-lg">
+        <h1 className="text-2xl font-bold mb-4 text-center text-foreground">
+          Healthcare Symptom Checker
+        </h1>
+
+        <Textarea
+          value={symptoms}
+          onChange={(e) => setSymptoms(e.target.value)}
+          placeholder="Describe your symptoms..."
+          rows={4}
+        ></Textarea>
+
+        <Button
+          variant="secondary"
+          onClick={handleCheck}
+          disabled={loading}
+          className="mt-4 w-full py-2 rounded-md transition-colors duration-200"
+        >
+          {loading ? "Analyzing..." : "Check Symptoms"}
+        </Button>
+
+        {result && (
+          <div className="mt-6 bg-muted border border-border rounded-lg p-4">
+            <h2 className="font-semibold mb-2 text-foreground">Results:</h2>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {result}
+            </p>
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground mt-4 text-center">
+          This tool is for educational purposes only and not a substitute for
+          professional medical advice.
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
