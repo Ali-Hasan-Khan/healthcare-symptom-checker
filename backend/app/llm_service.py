@@ -1,3 +1,5 @@
+import re
+
 from app.config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from openai import OpenAI
 
@@ -9,66 +11,91 @@ client = OpenAI(
 DISCLAIMER = "This is for educational purposes only and not medical advice."
 
 
+def normalize_response_format(response: str) -> str:
+    """Normalize the LLM response to ensure consistent formatting"""
+
+    # Remove extra whitespace and normalize line breaks
+    response = re.sub(r"\n\s*\n\s*\n+", "\n\n", response)
+    response = response.strip()
+
+    # Ensure consistent heading format
+    response = re.sub(r"\*\*([^*]+)\*\*\s*:?\s*", r"**\1:**\n\n", response)
+
+    # Normalize bullet points
+    response = re.sub(r"^\s*[\-•]\s*", "- ", response, flags=re.MULTILINE)
+
+    # Ensure proper spacing after headings
+    response = re.sub(r"(\*\*[^*]+\*\*:)\n([^\n])", r"\1\n\n\2", response)
+
+    # Remove excessive spacing
+    response = re.sub(r"\n{3,}", "\n\n", response)
+
+    return response
+
+
 def get_health_recommendation(symptom_text: str) -> str:
-    prompt = f"""You are a medical information assistant designed to help users understand potential conditions based on their symptoms. You must provide structured, educational information while emphasizing the importance of professional medical consultation.
+    prompt = f"""You are a medical information assistant. You MUST follow this EXACT format with NO deviations:
 
-## Your Role:
-- Analyze symptoms and suggest possible conditions based on medical knowledge
-- Provide educational information about potential causes
-- Always emphasize that this is not a medical diagnosis
-- Encourage seeking professional medical care
+## STRICT FORMATTING RULES:
+1. Use EXACTLY these headings with double asterisks: **Heading Name:**
+2. Leave EXACTLY one blank line after each heading
+3. Use bullet points with single dashes (-)
+4. NO extra formatting, NO bold text except headings
+5. Keep each section concise (2-3 sentences max per point)
 
-## Analysis Framework:
-1. **Symptom Analysis**: Evaluate the provided symptoms for patterns and severity indicators
-2. **Condition Matching**: Identify potential conditions that commonly present with these symptoms
-3. **Risk Assessment**: Note any symptoms that may indicate urgent medical attention is needed
-4. **Recommendations**: Provide actionable next steps
+## REQUIRED RESPONSE FORMAT:
 
-## Response Structure:
-Please format your response as follows:
+**Symptom Summary**
 
-**Symptom Summary:**
-- Brief acknowledgment of the reported symptoms
+Brief acknowledgment of the reported symptoms in 1-2 sentences.
 
-**Possible Conditions:**
-- List 2-4 most likely conditions that could cause these symptoms
-- For each condition, provide a brief explanation (1-2 sentences)
-- Rank from most common/likely to less common
+**Possible Conditions**
 
-**When to Seek Immediate Care:**
-- Mention any red flag symptoms that would require urgent medical attention
-- Include this section only if applicable to the symptoms
+- Condition 1: Brief explanation (most likely)
+- Condition 2: Brief explanation (common)
+- Condition 3: Brief explanation (less common)
 
-**General Recommendations:**
-- Suggest appropriate next steps (self-care, routine doctor visit, urgent care, etc.)
-- Mention any additional symptoms to monitor
-- Suggest questions to ask a healthcare provider
+**When to Seek Immediate Care**
 
-## Guidelines:
-- Use clear, non-technical language when possible
-- Provide context for medical terms when used
-- Give answer in proper markdown format with proper spacing between headings and texts
-- Be specific about timeframes (e.g., "symptoms lasting more than X days")
-- Avoid definitive diagnostic language (use "may indicate," "could suggest," etc.)
-- Include relevant lifestyle factors or demographics when applicable
-- If symptoms are vague or insufficient, ask for more specific information
+- List red flag symptoms requiring urgent care
+- Only include if applicable to the symptoms
 
-## User's Symptoms:
+**General Recommendations**
+
+- Suggest next steps (self-care, doctor visit, etc.)
+- Mention symptoms to monitor
+- Healthcare provider questions to ask
+
+**Important Disclaimer**
+{DISCLAIMER}
+
+## USER'S SYMPTOMS:
 "{symptom_text}"
 
-Please analyze these symptoms and provide a comprehensive response following the structure above."""
+Respond using EXACTLY the format above. Do not add extra formatting or deviate from this structure."""
 
     data = {
         "model": "openai/gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a medical assistant that ALWAYS follows the exact formatting provided. Never deviate from the specified structure.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.3,  # Lower temperature for more consistent responses
     }
 
     try:
         response = client.chat.completions.create(
-            model=data["model"], messages=data["messages"]
+            model=data["model"], messages=data["messages"], temperature=0.3
         )
-        # print(response.choices[0].message.content)
-        return response.choices[0].message.content or ""
+        raw_response = response.choices[0].message.content or ""
+
+        # Apply formatting normalization
+        formatted_response = normalize_response_format(raw_response)
+
+        return formatted_response
     except Exception as e:
         return f"Error contacting LLM API: {str(e)}"
 
