@@ -26,8 +26,9 @@ def check_symptoms(data: SymptomInput):
 
 
 @app.get("/health")
+@app.head("/health")
 async def health_check():
-    """Simple health check endpoint"""
+    """Health check endpoint that accepts both GET and HEAD requests"""
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
