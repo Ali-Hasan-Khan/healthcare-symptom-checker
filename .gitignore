@@ -13,6 +13,7 @@ lerna-debug.log*
 # Database
 *.db
 *.sqlite3
+sqlite3.exe
 database.db
 
 # FastAPI/Python virtual environment

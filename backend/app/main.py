@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.llm_service import get_health_recommendation
+from app.database import log_query, fetch_history
 from datetime import datetime
 
 app = FastAPI(title="Healthcare Symptom Checker")
@@ -21,8 +22,21 @@ class SymptomInput(BaseModel):
 
 @app.post("/api/check")
 def check_symptoms(data: SymptomInput):
-    result = get_health_recommendation(data.symptoms)
-    return {"input": data.symptoms, "result": result}
+    try:
+        # Get health recommendation from LLM
+        result = get_health_recommendation(data.symptoms)
+
+        # Log the query and result to database
+        log_query(data.symptoms, result)
+
+        return {"input": data.symptoms, "result": result}
+
+    except Exception as e:
+        # Log failed attempts too (optional)
+        error_message = f"Error processing symptoms: {str(e)}"
+        log_query(data.symptoms, error_message)
+
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/health")
@@ -34,3 +48,13 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "service": "Healthcare Symptom Checker",
     }
+
+
+@app.get("/api/history")
+def get_history(limit: int = 10):
+    """Optional: Get recent query history (for admin/debugging)"""
+    try:
+        history = fetch_history(limit)
+        return {"history": history}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to fetch history")
