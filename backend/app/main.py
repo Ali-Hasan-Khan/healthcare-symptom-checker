@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.llm_service import get_health_recommendation
+from datetime import datetime
 
 app = FastAPI(title="Healthcare Symptom Checker")
 
@@ -22,3 +23,13 @@ class SymptomInput(BaseModel):
 def check_symptoms(data: SymptomInput):
     result = get_health_recommendation(data.symptoms)
     return {"input": data.symptoms, "result": result}
+
+
+@app.get("/health")
+async def health_check():
+    """Simple health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "Healthcare Symptom Checker",
+    }
