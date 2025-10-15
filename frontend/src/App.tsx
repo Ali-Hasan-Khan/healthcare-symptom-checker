@@ -194,12 +194,14 @@ function App() {
             </div>
           </div>
         )}
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
-          <p className="text-xs text-muted-foreground/70 mt-3 text-center bg-background px-4 py-2 rounded shadow z-50">
-            This tool is for educational purposes only and not a substitute for
-            professional medical advice.
-          </p>
-        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-border bg-card px-4 py-3">
+        <p className="text-xs text-muted-foreground text-center">
+          This tool is for educational purposes only and not a substitute for
+          professional medical advice.
+        </p>
       </div>
     </div>
   );
