@@ -1,11 +1,10 @@
 # Healthcare Symptom Checker
 
-A modern symptom checker application that helps users explore possible conditions based on reported symptoms. This project features a FastAPI backend with LLM integration and a React frontend with real-time streaming responses.
+A modern symptom checker application that helps users explore possible conditions based on reported symptoms. This project features a FastAPI backend with LLM integration and a React frontend.
 
 ## Features
 
 - **AI-Powered Analysis**: Uses OpenRouter API with GPT models for intelligent symptom analysis
-- **Streaming Responses**: Real-time text streaming for better user experience
 - **Responsive UI**: Modern React frontend with Tailwind CSS and shadcn/ui components
 - **Database Logging**: SQLite database for query history and analytics
 - **Health Monitoring**: Built-in health check endpoints for deployment monitoring
@@ -118,7 +117,7 @@ Frontend will be available at: `http://localhost:5173`
 
 ## Important Disclaimers
 
-- ⚠️ **This is for educational purposes only**
-- ⚠️ **Not a substitute for professional medical advice**
-- ⚠️ **Always consult healthcare providers for medical concerns**
-- ⚠️ **Do not use for emergency situations**
+- **This is for educational purposes only**
+- **Not a substitute for professional medical advice**
+- **Always consult healthcare providers for medical concerns**
+- **Do not use for emergency situations**
